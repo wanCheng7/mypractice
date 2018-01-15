@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>轮播</title>
+	<style>
+		html * {
+			margin: 0;
+			padding: 0;
+		}
+		.clearfix {
+			zoom: 1;
+		}
+		.clearfix:after {
+			content: '';
+			display: table;
+			clear: both;
+		}
+		.banner_wrap {
+			/*width: 600px;*/
+			width: 100%;
+			height: 400px;
+			overflow: hidden;
+			position: relative;
+		}
+		.banner_ul {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+		.banner_ul li {
+			float: left;
+			height: 280px;
+		}
+		.banner_ul li .img {
+			width: 100%;
+		}
+		.banner_all_list {
+			position: absolute;
+			width: 100%;
+			text-align: center;
+			left: 0;
+			bottom: 10px;
+			overflow: hidden;
+		}
+		.banner_all_list li {
+			display: inline-block;
+			width: 10px;
+			height: 10px;
+			background: #2196f3;
+			opacity: 0.5;
+			border-radius: 50%;
+			margin: 0 8px;
+			cursor: pointer;
+			transition: all 0.5s;
+		}
+		.banner_all_list li.active, .banner_all_list li:hover {
+			opacity: 1;
+			transition: all 0.3s;
+		}
+		.border_item {
+			position: absolute;
+			width: 50px;
+			height: 100%;
+			line-height: 400px;
+			top: 0;
+			color: #fff;
+			font-size: 24px;
+			text-align: center;
+			cursor: pointer;
+			opacity: 0;
+		}
+		.next_item {
+			right: 0;
+			background: url(images/right.png) no-repeat center center, -webkit-linear-gradient(90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+			background: url(images/right.png) no-repeat center center, -o-linear-gradient(90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+			background: url(images/right.png) no-repeat center center, -moz-linear-gradient(90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+			background: url(images/right.png) no-repeat center center, linear-gradient(90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+		}
+		.before_item {
+			left: 0;
+			background: url(images/left.png) no-repeat center center, -webkit-linear-gradient(-90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+			background: url(images/left.png) no-repeat center center, -o-linear-gradient(-90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+			background: url(images/left.png) no-repeat center center, -moz-linear-gradient(-90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+			background: url(images/left.png) no-repeat center center, linear-gradient(-90deg, rgba(0,0,0,0.0001), rgba(0,0,0,0.5));
+		}
+	</style>
+</head>
+<body>
+	<section class="banner_wrap" id="banner_wrap">
+		<ul class="banner_ul clearfix" id="ul_box">
+			<li><img class="img" src="images/pic_1.png" alt=""></li>
+			<li><img class="img" src="images/pic_2.png" alt=""></li>
+			<li><img class="img" src="images/pic_3.png" alt=""></li>
+			<li><img class="img" src="images/pic_4.png" alt=""></li>
+		</ul>
+		<ul class="banner_all_list" id="banner_all_list">
+		</ul>
+		<div class="next_item border_item" id="next_item"></div>
+		<div class="before_item border_item" id="before_item"></div>
+	</section>
+
+	<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+	<script>
+		window.onload = function(){
+			var index_ = 0;  //默认停留的下标
+			var time_ = 3000;  //轮播时间
+			var action_time = 0.8; //动画时间
+			var autoMove = true; //是否自动轮播
+
+			var ul_box = document.getElementById('ul_box');
+			var banner_all_list = document.getElementById('banner_all_list');
+			var next_item = document.getElementById('next_item');
+			var before_item = document.getElementById('before_item');
+			var banner_wrap = document.getElementById('banner_wrap');
+			var box_width = banner_wrap.clientWidth;  //外层盒子宽度
+			var li_item = document.querySelectorAll('#ul_box li');
+			var all_len = ul_box.children.length;  //所有条目数量
+			var wid_ = banner_wrap.clientWidth * all_len;
+			var li_ = '';
+			for(var j=0; j<li_item.length; j++){
+				li_item[j].style.width = box_width + 'px';
+			}
+			for (var i = all_len - 1; i >= 0; i--) {
+				li_ += '<li></li>';
+			}
+			banner_all_list.innerHTML = li_;  //所有列表点
+			ul_box.style.transition = 'all ' + action_time +'s';
+			ul_box.style.width = wid_+'px';
+			function addClass(obj,cls){  //addClass
+				var class_ = obj.className;
+				if (class_.indexOf(cls) === -1) {
+					var newClass = class_ + ' ' + cls;
+					obj.className = newClass;
+				}	
+			}
+			function removeClass(obj,cls){  //removeClass
+				var class_ = obj.className ? obj.className : '';
+				if (class_.indexOf(cls)) {
+					var cls_ = new RegExp(cls);
+					class_ = class_.replace(cls, '');
+					obj.className = class_;
+				}
+			}
+			removeClass(banner_all_list, 'active');
+			function moveToPageFn(index) {
+				var left_ = '-' + index* box_width + 'px';
+				ul_box.style.transform = 'translate('+ left_ +',0)';
+				for (var i = banner_all_list.children.length - 1; i >= 0; i--) {
+					removeClass(banner_all_list.children[i], 'active');
+				}
+				addClass(banner_all_list.children[index], 'active');
+			}	
+			moveToPageFn(index_);  //初始化
+			if (autoMove) {
+				var interval_ = setInterval(function(){
+					index_ ++;
+					if (index_ <= (all_len-1)) {
+						moveToPageFn(index_);
+					}
+					else{
+						index_ = 0;
+						moveToPageFn(0);
+					}
+				},time_);
+			}else {
+				clearInterval(interval_);
+			}
+			var spot_ = document.querySelectorAll('#banner_all_list li');
+			for(var i=0; i<spot_.length; i++){
+				var item = spot_[i];
+				item.index = i;
+				item.onclick = function(){
+					index_ = this.index;
+					moveToPageFn(index_)
+				}
+			}
+			// 下一张
+			var nextItemFn = function () {
+				if (index_ < (all_len - 1)) {
+					index_ ++;
+				}
+				else {
+					index_ = 0;
+				}
+				moveToPageFn(index_);
+			}
+			// 上一张
+			var beforeItemFn = function() {
+				if (index_ > 0) {
+					index_ --;
+				}
+				else {
+					index_ = all_len-1;
+				}
+				moveToPageFn(index_);
+			}
+			before_item.onclick = function(){
+				beforeItemFn();
+			}
+			next_item.onclick = function(){
+				nextItemFn();
+			}
+			function mouseoverFn () { //鼠标进入
+				next_item.style.opacity = 1;
+				before_item.style.opacity = 1;
+				window.clearInterval(interval_);
+			}
+			function mouseoutFn () {// 鼠标离开
+				next_item.style.opacity = 0;
+				before_item.style.opacity = 0;
+				interval_ = setInterval(function(){
+					index_ ++;
+					if (index_ <= (all_len-1)) {
+						moveToPageFn(index_);
+					}
+					else{
+						index_ = 0;
+						moveToPageFn(0);
+					}
+				},time_);
+			}
+			ul_box.onmouseover = mouseoverFn;  //banner 
+			next_item.onmouseover = mouseoverFn; //下一张
+			before_item.onmouseover = mouseoverFn; //上一张
+			ul_box.onmouseout = mouseoutFn;
+			next_item.onmouseout = mouseoutFn; //下一张
+			before_item.onmouseout = mouseoutFn; //上一张
+		};
+
+		// $(function(){
+		// 	var index_ = 0;  //默认停留的下标
+		// 	var time_ = 2000;  //轮播时间
+		// 	var action_time = 0.8; //动画时间
+		// 	var autoMove = true; //是否自动轮播
+		// 	var $banner_ul = $('.banner_ul');
+		// 	var $banner_all_list = $('.banner_all_list');
+
+		// 	var all_len = $('.banner_ul').children('li').length;  //所有条目
+		// 	var box_width = $('.banner_wrap').width();  //外层盒子宽度
+		// 	var wid_ = box_width * all_len;
+		// 	var li_ = '';
+		// 	for (var i = all_len - 1; i >= 0; i--) {
+		// 		li_ += '<li></li>';
+		// 	}
+		// 	$banner_ul.css('transition', 'all ' + action_time +'s');
+		// 	$banner_all_list.append(li_);  //所有列表点
+		// 	$banner_ul.width(wid_);
+		// 	$('.banner_ul > li').width(box_width);
+		// 	function moveToPageFn(index) {
+		// 		var left_ = '-' + index* box_width + 'px';
+		// 		$banner_ul.css('transform', 'translate('+ left_ +',0)');
+		// 		$banner_all_list.children('li').eq(index_).addClass('active').siblings('li').removeClass('active');
+		// 	}	
+		// 	moveToPageFn(index_);  //初始化
+		// 	if (autoMove) {
+		// 		var interval_ = setInterval(function(){
+		// 			index_ ++;
+		// 			if (index_ <= (all_len-1)) {
+		// 				moveToPageFn(index_);
+		// 			}
+		// 			else{
+		// 				index_ = 0;
+		// 				moveToPageFn(0);
+		// 			}
+		// 		},time_);
+		// 	}else {
+		// 		clearInterval(interval_);
+		// 	}
+		// 	$('.banner_all_list li').click(function() {
+		// 		index_ = $(this).index();
+		// 		moveToPageFn(index_);
+		// 	});
+		// 	// 下一张
+		// 	function nextItemFn() {
+		// 		if (index_ < (all_len - 1)) {
+		// 			index_ ++;
+		// 		}
+		// 		else {
+		// 			index_ = 0;
+		// 		}
+		// 		moveToPageFn(index_);
+		// 	}
+		// 	// 上一张
+		// 	function beforeItemFn() {
+		// 		if (index_ > 0) {
+		// 			index_ --;
+		// 		}
+		// 		else {
+		// 			index_ = all_len-1;
+		// 		}
+		// 		moveToPageFn(index_);
+		// 	}
+		// 	$('.before_item').click(function(){
+		// 		beforeItemFn();
+		// 	})
+		// 	$('.next_item').click(function(){
+		// 		nextItemFn();
+		// 	})
+		// 	$('.banner_ul, .border_item').hover(function() {
+		// 		$('.border_item').css('opacity',1);
+		// 		window.clearInterval(interval_);
+		// 	}, function() {
+		// 		$('.border_item').css('opacity',0);
+		// 		interval_ = setInterval(function(){
+		// 			index_ ++;
+		// 			if (index_ <= (all_len-1)) {
+		// 				moveToPageFn(index_);
+		// 			}
+		// 			else{
+		// 				index_ = 0;
+		// 				moveToPageFn(0);
+		// 			}
+		// 		},time_);
+		// 	});
+		// })
+	</script>
+</body>
+</html>
